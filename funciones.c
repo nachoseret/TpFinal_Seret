@@ -55,7 +55,7 @@ void nuevoContacto(Contacto ** agenda, int agendaSize){
 	scanf("%d", &(nuevaAgenda[agendaSize].edad));
 
 	(*agenda) = nuevaAgenda;
-	free(nuevaAgenda);
+	//free(nuevaAgenda);
 }
 
 int cargarAgenda(Contacto ** agenda){
@@ -88,6 +88,7 @@ int cargarAgenda(Contacto ** agenda){
 		fscanf(entrada, "%s", buffer);
 		nuevaAgenda[i].nombre = malloc(sizeof(char)*(strlen(buffer)+1));
 		strcpy(nuevaAgenda[i].nombre, buffer);
+		printf("%s\n", nuevaAgenda[i].nombre );
 
 		fscanf(entrada, "%s", buffer);
 		nuevaAgenda[i].apellido = malloc(sizeof(char)*(strlen(buffer)+1));

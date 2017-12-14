@@ -15,7 +15,7 @@ int main()
 {
 	// Menu principal
 	clear();
-	Contacto * agenda;
+	Contacto * agenda = malloc(sizeof(Contacto));
 	int agendaSize = 0;
 	int op = 0;
 	while(1){
