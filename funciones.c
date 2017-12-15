@@ -1,3 +1,6 @@
+// TP Final - Prog. II
+// Ignacio Seret
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
