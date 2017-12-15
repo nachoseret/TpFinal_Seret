@@ -218,9 +218,8 @@ int buscarContacto(Contacto * agenda, int agendaSize, char * nombre, char * apel
 // el espacio al tamano original - 1 y devuelve ese valor. En caso de error al realocar memoria, devuelve
 // tamano original e imprime un mensaje informando al usuario.
 int eliminarContacto(Contacto ** agenda, int agendaSize, int pos){
-	printf("1\n");
 	if((*agenda)!=NULL&&agendaSize!=0){
-		
+
 		free((*agenda)[pos].nombre);
 		free((*agenda)[pos].apellido);
 		free((*agenda)[pos].domicilio);
@@ -235,7 +234,7 @@ int eliminarContacto(Contacto ** agenda, int agendaSize, int pos){
 			strcpy((*agenda)[pos].apellido, (*agenda)[agendaSize-1].apellido);
 			strcpy((*agenda)[pos].domicilio, (*agenda)[agendaSize-1].domicilio);
 			strcpy((*agenda)[pos].telefono, (*agenda)[agendaSize-1].telefono);
-			(*agenda)[pos].edad = (*agenda)[pos].edad;
+			(*agenda)[pos].edad = (*agenda)[agendaSize-1].edad;
 		}	
 
 		Contacto * nuevaAgenda = realloc((*agenda), (agendaSize-1)*sizeof(Contacto));
