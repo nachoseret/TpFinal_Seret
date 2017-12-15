@@ -62,7 +62,14 @@ int main()
 				scanf(" %[^\t\n]s",nombre);
 				printf("Apellido: ");
 				scanf(" %[^\t\n]s",apellido);
-				agendaSize = eliminarContacto(&agenda, agendaSize, nombre, apellido);
+				op = buscarContacto(agenda, agendaSize, nombre, apellido);
+				if(op>=0){
+					agendaSize = eliminarContacto(&agenda, agendaSize, op);
+					printf("%s %s ha sido eliminado.\n", nombre, apellido);
+					pause();
+					break;
+				}
+				printf("%s %s no esta agendado.\n", nombre, apellido);
 				pause();
 			break;
 			case 5:

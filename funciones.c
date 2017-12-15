@@ -23,6 +23,8 @@ void pause(){
 	getchar();
 }
 
+// mostrarContacto : Contacto -> none
+// Toma una estructura de tipo contacto e imprime por pantalla sus datos.
 void mostrarContacto(Contacto x){
 	printf("%s %s - Dom: %s - Tel: %s - Edad: %d\n",x.nombre, x.apellido, x.domicilio, x.telefono, x.edad);
 }
@@ -43,6 +45,9 @@ void mostrarAgenda(Contacto * agenda, int agendaSize){
 	}
 }
 
+// ingresoDatos : None -> Contacto
+// Pide al usuario por teclado el ingreso de los datos de un contacto y devuelve
+// una estructura de tipo Contacto con esos datos.
 Contacto ingresoDatos(){
 	Contacto ingreso;
 
@@ -73,12 +78,11 @@ Contacto ingresoDatos(){
 	return ingreso;
 }
 
-// nuevoContacto : Contacto ** , int -> int
-// Toma un puntero a puntero Contacto y la cantidad de Contactos en ese espacio. Realoca la memoria para poder
-// guardar un nuevo Contacto. Luego pide por teclado los datos del mismo y los guarda en el
-// espacio que se gano con el llamado a realloc antes mencionado. En caso que realloc devuelva NULL,
-// se muestra el mensaje "Error realocando memoria." y la funcion devuelve el tamano que la agenda tenia
-// cuando se hizo el llamado. En caso exitoso, devuelve el tamano + 1.
+// nuevoContacto : Contacto ** , int, Contacto -> int
+// Toma un puntero a puntero Contacto, la cantidad de Contactos en ese espacio y el Contacto a agregar.
+// Realoca la memoria para poder guardar el nuevo Contacto y lo guarda en la ultima posicion.
+// En caso que realloc devuelva NULL, se muestra el mensaje "Error realocando memoria." y la funcion
+// devuelve el tamano que la agenda tenia cuando se hizo el llamado. En caso exitoso, devuelve el tamano + 1.
 int nuevoContacto(Contacto ** agenda, int agendaSize, Contacto ingreso){
 
 	Contacto * nuevaAgenda = realloc((*agenda), (agendaSize+1)*sizeof(Contacto));
@@ -191,11 +195,11 @@ int cargarAgenda(Contacto ** agenda){
 	return agendaSize;
 }
 
-// buscarContacto : Contacto * , int -> None
-// Recibe un puntero a Contacto y la cantidad de Contactos que hay en ese espacio.
-// Pide el nombre y apellido a buscar, itera sobre los contactos hasta encontrar el
-// nombre y apellido deseados. En caso de encontrarlo, imprime sus datos. Caso contrario,
-// imprime un mensaje de que no esta agendado.
+// buscarContacto : Contacto * , int, char *, char * -> None
+// Recibe un puntero a Contacto, la cantidad de Contactos que hay en ese espacio y el
+// nombre y apellido a buscar, itera sobre los contactos hasta encontrar el nombre y
+// apellido deseados. En caso de encontrarlo, devuelve la posicion. Caso contrario,
+// devuelve -1.
 int buscarContacto(Contacto * agenda, int agendaSize, char * nombre, char * apellido){
 	int i;
 	for(i=0; i<agendaSize; i++){
@@ -208,78 +212,52 @@ int buscarContacto(Contacto * agenda, int agendaSize, char * nombre, char * apel
 	return -1;
 }
 
-// eliminarContacto : Contacto ** , int -> int
-// Toma un puntero a puntero Contacto y la cantidad de Contactos en ese espacio. Pide por teclado el nombre
-// y apellido del contacto a eliminar. Itera sobre los contactos hasta encontrar uno con el nombre y apellido
-// deseados. En caso de encontrarlo, permuta al mismo con el que esta en el ultimo lugar. Finalmente, realoca
-// la memoria, reduciendo el tamano del espacio alocado en uno (un sizeof(Contacto)). Si la realocacion funciona,
-// devuelve la cantidad de contactos menos 1. Caso contrario, devuelve la cantidad de contactos original (la agenda
-// sigue teniendo a todos los contactos pero con el que se intento eliminar en el ultimo lugar).
-int eliminarContacto(Contacto ** agenda, int agendaSize, char * nombre, char * apellido){
-	int i;
+// eliminarContacto : Contacto ** , int, int -> int
+// Toma un puntero a puntero Contacto, la cantidad de Contactos en ese espacio y la posicion del contacto
+// a eliminar. Copia el contacto de la ultima posicion al lugar del que se quiere eliminar, luego realoca
+// el espacio al tamano original - 1 y devuelve ese valor. En caso de error al realocar memoria, devuelve
+// tamano original e imprime un mensaje informando al usuario.
+int eliminarContacto(Contacto ** agenda, int agendaSize, int pos){
+	printf("1\n");
+	if((*agenda)!=NULL&&agendaSize!=0){
+		
+		free((*agenda)[pos].nombre);
+		free((*agenda)[pos].apellido);
+		free((*agenda)[pos].domicilio);
+		free((*agenda)[pos].telefono);
 
-	Contacto * temp = malloc(sizeof(Contacto));
-	if((*agenda)!=NULL){
-		int pos = -1;
-		for(i=0; i<agendaSize; i++){
+		if(agendaSize!=1 && (agendaSize-1)!=pos){
+			(*agenda)[pos].nombre = malloc(sizeof(char)*(strlen((*agenda)[agendaSize-1].nombre)+1));
+			(*agenda)[pos].apellido = malloc(sizeof(char)*(strlen((*agenda)[agendaSize-1].apellido)+1));
+			(*agenda)[pos].domicilio = malloc(sizeof(char)*(strlen((*agenda)[agendaSize-1].domicilio)+1));
+			(*agenda)[pos].telefono = malloc(sizeof(char)*(strlen((*agenda)[agendaSize-1].telefono)+1));
+			strcpy((*agenda)[pos].nombre, (*agenda)[agendaSize-1].nombre);
+			strcpy((*agenda)[pos].apellido, (*agenda)[agendaSize-1].apellido);
+			strcpy((*agenda)[pos].domicilio, (*agenda)[agendaSize-1].domicilio);
+			strcpy((*agenda)[pos].telefono, (*agenda)[agendaSize-1].telefono);
+			(*agenda)[pos].edad = (*agenda)[pos].edad;
+		}	
 
-			if(strcmp((*agenda)[i].nombre, nombre)==0){
+		Contacto * nuevaAgenda = realloc((*agenda), (agendaSize-1)*sizeof(Contacto));
 
-				if(strcmp((*agenda)[i].apellido, apellido)==0){
-
-					Contacto * temp = malloc(sizeof(Contacto));
-					temp->nombre = (*agenda)[agendaSize-1].nombre;
-					temp->apellido = (*agenda)[agendaSize-1].apellido;
-					temp->domicilio = (*agenda)[agendaSize-1].domicilio;
-					temp->telefono = (*agenda)[agendaSize-1].telefono;
-					temp->edad = (*agenda)[agendaSize-1].edad;
-
-					(*agenda)[agendaSize-1].nombre = (*agenda)[i].nombre;
-					(*agenda)[agendaSize-1].apellido = (*agenda)[i].apellido;
-					(*agenda)[agendaSize-1].domicilio = (*agenda)[i].domicilio;
-					(*agenda)[agendaSize-1].telefono = (*agenda)[i].telefono;
-					(*agenda)[agendaSize-1].edad = (*agenda)[i].edad;
-
-					(*agenda)[i].nombre = temp->nombre;
-					(*agenda)[i].apellido = temp->apellido;
-					(*agenda)[i].domicilio = temp->domicilio;
-					(*agenda)[i].telefono = temp->telefono;
-					(*agenda)[i].edad = temp->edad;
-
-					free(temp);
-
-					Contacto * nuevaAgenda = realloc((*agenda), (agendaSize)*sizeof(Contacto));
-					if(nuevaAgenda==NULL){
-						printf("Error realocando memoria.\n");
-						pause();
-						return agendaSize;
-					}
-
-					printf("%s %s ha sido eliminado.\n", nombre, apellido);
-					free(nombre);
-					free(apellido);
-					(*agenda) = nuevaAgenda;
-					return agendaSize-1;
-				}
-			}
+		if(nuevaAgenda==NULL){
+			printf("Error realocando memoria.\n");
+			pause();
+			return agendaSize;
 		}
 
-		printf("%s %s no esta agendado.\n", nombre, apellido);
-		free(nombre);
-		free(apellido);
-		return agendaSize;
+		(*agenda) = nuevaAgenda;
+		return agendaSize-1;
 	}
+
 	return agendaSize;
 }
 
 
-// editarContacto : Contacto * , int -> int
-// Toma un puntero a Contacto y la cantidad de Contactos en ese espacio. Pide por teclado el nombre
-// y apellido del contacto a editar. Itera sobre los contactos hasta encontrar uno con el nombre y apellido
-// deseados. En caso de encontrarlo, pide por teclado los nuevos datos del mismo. En los campos nombre,
-// apellido, direccion y telefono, da al usuario la opcion de ingresar "-" para conservar los viejos. La edad
-// debe ser ingresada de manera normal. Finalmente, cambia los datos del contacto por los nuevos (o conserva
-// los que se ingreso "-"). En caso de no encontrar el contacto, imprime un mensaje para informar al usuario.
+// editarContacto : Contacto * , int, int, Contacto -> int
+// Toma un puntero a Contacto, la cantidad de Contactos en ese espacio, la posicion del contacto
+// a editar y una estructura Contacto con los datos nuevos. Si el campo nuevo (menos la edad) tiene un
+// "-", conserva el dato original. Sino, reemplaza el original por el campo nuevo.
 void editarContacto(Contacto * agenda, int agendaSize, int pos, Contacto nuevo){
 
 	if(strcmp(nuevo.nombre,"-")!=0){
