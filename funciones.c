@@ -23,13 +23,63 @@ void pause(){
 	getchar();
 }
 
+void mostrarContacto(Contacto x){
+	printf("%s %s - Dom: %s - Tel: %s - Edad: %d\n",x.nombre, x.apellido, x.domicilio, x.telefono, x.edad);
+}
+
+// mostrarAgenda : Contacto * , int -> None
+// Recibe un puntero a Contacto y la cantidad de los mismos en el espacio que apunta.
+// Muestra todos los datos de los mismos, uno debajo del otro.
+void mostrarAgenda(Contacto * agenda, int agendaSize){
+
+	if(agenda==NULL||agendaSize==0){
+		printf("No hay contactos para mostrar.\n");
+		return;
+	}
+
+	int i;
+	for(i=0;i<agendaSize;i++){
+		mostrarContacto(agenda[i]);
+	}
+}
+
+Contacto ingresoDatos(){
+	Contacto ingreso;
+
+	char * buffer = malloc(sizeof(char)*300);
+	printf("Nombre: ");
+	scanf(" %[^\t\n]s",buffer);
+	ingreso.nombre = malloc(sizeof(char)*(strlen(buffer)+1));
+	strcpy(ingreso.nombre, buffer);
+
+	printf("Apellido: ");
+	scanf(" %[^\t\n]s",buffer);
+	ingreso.apellido = malloc(sizeof(char)*(strlen(buffer)+1));
+	strcpy(ingreso.apellido, buffer);
+
+	printf("Domicilio: ");
+	scanf(" %[^\t\n]s",buffer);
+	ingreso.domicilio = malloc(sizeof(char)*(strlen(buffer)+1));
+	strcpy(ingreso.domicilio, buffer);
+
+	printf("Telefono: ");
+	scanf(" %[^\t\n]s",buffer);
+	ingreso.telefono = malloc(sizeof(char)*(strlen(buffer)+1));
+	strcpy(ingreso.telefono, buffer);
+
+	printf("Edad: ");
+	scanf("%d", &(ingreso.edad));
+
+	return ingreso;
+}
+
 // nuevoContacto : Contacto ** , int -> int
 // Toma un puntero a puntero Contacto y la cantidad de Contactos en ese espacio. Realoca la memoria para poder
 // guardar un nuevo Contacto. Luego pide por teclado los datos del mismo y los guarda en el
 // espacio que se gano con el llamado a realloc antes mencionado. En caso que realloc devuelva NULL,
 // se muestra el mensaje "Error realocando memoria." y la funcion devuelve el tamano que la agenda tenia
 // cuando se hizo el llamado. En caso exitoso, devuelve el tamano + 1.
-int nuevoContacto(Contacto ** agenda, int agendaSize){
+int nuevoContacto(Contacto ** agenda, int agendaSize, Contacto ingreso){
 
 	Contacto * nuevaAgenda = realloc((*agenda), (agendaSize+1)*sizeof(Contacto));
 
@@ -38,29 +88,19 @@ int nuevoContacto(Contacto ** agenda, int agendaSize){
 		return agendaSize;
 	}
 
-	char * buffer = malloc(sizeof(char)*300);
-	printf("Nuevo contacto\nNombre: ");
-	scanf(" %[^\t\n]s",buffer);
-	nuevaAgenda[agendaSize].nombre = malloc(sizeof(char)*(strlen(buffer)+1));
-	strcpy(nuevaAgenda[agendaSize].nombre, buffer);
+	nuevaAgenda[agendaSize].nombre = malloc(sizeof(char)*(strlen(ingreso.nombre)+1));
+	strcpy(nuevaAgenda[agendaSize].nombre, ingreso.nombre);
 
-	printf("Apellido: ");
-	scanf(" %[^\t\n]s",buffer);
-	nuevaAgenda[agendaSize].apellido = malloc(sizeof(char)*(strlen(buffer)+1));
-	strcpy(nuevaAgenda[agendaSize].apellido, buffer);
+	nuevaAgenda[agendaSize].apellido = malloc(sizeof(char)*(strlen(ingreso.apellido)+1));
+	strcpy(nuevaAgenda[agendaSize].apellido, ingreso.apellido);
 
-	printf("Domicilio: ");
-	scanf(" %[^\t\n]s",buffer);
-	nuevaAgenda[agendaSize].domicilio = malloc(sizeof(char)*(strlen(buffer)+1));
-	strcpy(nuevaAgenda[agendaSize].domicilio, buffer);
+	nuevaAgenda[agendaSize].domicilio = malloc(sizeof(char)*(strlen(ingreso.domicilio)+1));
+	strcpy(nuevaAgenda[agendaSize].domicilio, ingreso.domicilio);
 
-	printf("Telefono: ");
-	scanf(" %[^\t\n]s",buffer);
-	nuevaAgenda[agendaSize].telefono = malloc(sizeof(char)*(strlen(buffer)+1));
-	strcpy(nuevaAgenda[agendaSize].telefono, buffer);
+	nuevaAgenda[agendaSize].telefono = malloc(sizeof(char)*(strlen(ingreso.telefono)+1));
+	strcpy(nuevaAgenda[agendaSize].telefono, ingreso.telefono);
 
-	printf("Edad: ");
-	scanf("%d", &(nuevaAgenda[agendaSize].edad));
+	nuevaAgenda[agendaSize].edad = ingreso.edad;
 
 	(*agenda) = nuevaAgenda;
 	return agendaSize+1;
@@ -156,25 +196,16 @@ int cargarAgenda(Contacto ** agenda){
 // Pide el nombre y apellido a buscar, itera sobre los contactos hasta encontrar el
 // nombre y apellido deseados. En caso de encontrarlo, imprime sus datos. Caso contrario,
 // imprime un mensaje de que no esta agendado.
-void buscarContacto(Contacto * agenda, int agendaSize){
+int buscarContacto(Contacto * agenda, int agendaSize, char * nombre, char * apellido){
 	int i;
-	char * nombre = malloc(sizeof(char)*300);
-	char * apellido = malloc(sizeof(char)*300);
-	printf("Buscar contacto\nNombre: ");
-	scanf(" %[^\t\n]s",nombre);
-	printf("Apellido: ");
-	scanf(" %[^\t\n]s",apellido);
 	for(i=0; i<agendaSize; i++){
 		if(strcmp(agenda[i].nombre, nombre)==0){
 			if(strcmp(agenda[i].apellido, apellido)==0){
-				printf("%s %s - Dom: %s - Tel: %s - Edad: %d\n", agenda[i].nombre, agenda[i].apellido, agenda[i].domicilio, agenda[i].telefono, agenda[i].edad);
-				return;
+				return i;
 			}
 		}
 	}
-	printf("%s %s no esta agendado.\n", nombre, apellido);
-	free(nombre);
-	free(apellido);
+	return -1;
 }
 
 // eliminarContacto : Contacto ** , int -> int
@@ -184,14 +215,8 @@ void buscarContacto(Contacto * agenda, int agendaSize){
 // la memoria, reduciendo el tamano del espacio alocado en uno (un sizeof(Contacto)). Si la realocacion funciona,
 // devuelve la cantidad de contactos menos 1. Caso contrario, devuelve la cantidad de contactos original (la agenda
 // sigue teniendo a todos los contactos pero con el que se intento eliminar en el ultimo lugar).
-int eliminarContacto(Contacto ** agenda, int agendaSize){
+int eliminarContacto(Contacto ** agenda, int agendaSize, char * nombre, char * apellido){
 	int i;
-	char * nombre = malloc(sizeof(char)*300);
-	char * apellido = malloc(sizeof(char)*300);
-	printf("Eliminar contacto\nNombre: ");
-	scanf(" %[^\t\n]s",nombre);
-	printf("Apellido: ");
-	scanf(" %[^\t\n]s",apellido);
 
 	Contacto * temp = malloc(sizeof(Contacto));
 	if((*agenda)!=NULL){
@@ -255,76 +280,33 @@ int eliminarContacto(Contacto ** agenda, int agendaSize){
 // apellido, direccion y telefono, da al usuario la opcion de ingresar "-" para conservar los viejos. La edad
 // debe ser ingresada de manera normal. Finalmente, cambia los datos del contacto por los nuevos (o conserva
 // los que se ingreso "-"). En caso de no encontrar el contacto, imprime un mensaje para informar al usuario.
-void editarContacto(Contacto * agenda, int agendaSize){
-	int i;
-	char * nombre = malloc(sizeof(char)*300);
-	char * apellido = malloc(sizeof(char)*300);
-	printf("Editar contacto\nNombre: ");
-	scanf(" %[^\t\n]s",nombre);
-	printf("Apellido: ");
-	scanf(" %[^\t\n]s",apellido);
-	for(i=0; i<agendaSize; i++){
-		if(strcmp(agenda[i].nombre, nombre)==0){
-			if(strcmp(agenda[i].apellido, apellido)==0){
-				free(nombre);
-				free(apellido);
+void editarContacto(Contacto * agenda, int agendaSize, int pos, Contacto nuevo){
 
-				printf("\n%s %s - Dom: %s - Tel: %s - Edad: %d\nIngrese '-' en nombre, apellido, domicilio y/o telefono\npara dejarlo sin modificar.",
-					agenda[i].nombre, agenda[i].apellido, agenda[i].domicilio, agenda[i].telefono, agenda[i].edad);
-
-				char * buffer = malloc(sizeof(char)*300);
-				printf("\nNuevo nombre: ");
-				scanf(" %[^\t\n]s",buffer);
-				if(strcmp(buffer,"-")!=0){
-					free(agenda[i].nombre);
-					agenda[i].nombre = malloc(sizeof(char)*(strlen(buffer)+1));
-					strcpy(agenda[i].nombre, buffer);
-				}
-				printf("Nuevo apellido: ");
-				scanf(" %[^\t\n]s",buffer);
-				if(strcmp(buffer,"-")!=0){
-					free(agenda[i].apellido);
-					agenda[i].apellido = malloc(sizeof(char)*(strlen(buffer)+1));
-					strcpy(agenda[i].apellido, buffer);
-				}
-				printf("Nuevo domicilio: ");
-				scanf(" %[^\t\n]s",buffer);
-				if(strcmp(buffer,"-")!=0){
-					free(agenda[i].domicilio);
-					agenda[i].domicilio = malloc(sizeof(char)*(strlen(buffer)+1));
-					strcpy(agenda[i].domicilio, buffer);
-				}
-				printf("Nuevo telefono: ");
-				scanf(" %[^\t\n]s",buffer);
-				if(strcmp(buffer,"-")!=0){
-					free(agenda[i].telefono);
-					agenda[i].telefono = malloc(sizeof(char)*(strlen(buffer)+1));
-					strcpy(agenda[i].telefono, buffer);
-				}
-				printf("Edad: ");
-				scanf("%d", &(agenda[i].edad));
-				
-				return;
-			}
-		}
-	}
-	printf("%s %s no esta agendado.\n", nombre, apellido);
-	free(nombre);
-	free(apellido);
-}
-
-// mostrarAgenda : Contacto * , int -> None
-// Recibe un puntero a Contacto y la cantidad de los mismos en el espacio que apunta.
-// Muestra todos los datos de los mismos, uno debajo del otro.
-void mostrarAgenda(Contacto * agenda, int agendaSize){
-
-	if(agenda==NULL||agendaSize==0){
-		printf("No hay contactos para mostrar.\n");
-		return;
+	if(strcmp(nuevo.nombre,"-")!=0){
+		free(agenda[pos].nombre);
+		agenda[pos].nombre = malloc(sizeof(char)*(strlen(nuevo.nombre)+1));
+		strcpy(agenda[pos].nombre, nuevo.nombre);
 	}
 
-	int i;
-	for(i=0;i<agendaSize;i++){
-		printf("%s %s - Dom: %s - Tel: %s - Edad: %d\n",agenda[i].nombre, agenda[i].apellido, agenda[i].domicilio, agenda[i].telefono, agenda[i].edad);
+	if(strcmp(nuevo.apellido,"-")!=0){
+		free(agenda[pos].apellido);
+		agenda[pos].apellido = malloc(sizeof(char)*(strlen(nuevo.apellido)+1));
+		strcpy(agenda[pos].apellido, nuevo.apellido);
 	}
+
+	if(strcmp(nuevo.domicilio,"-")!=0){
+		free(agenda[pos].domicilio);
+		agenda[pos].domicilio = malloc(sizeof(char)*(strlen(nuevo.domicilio)+1));
+		strcpy(agenda[pos].domicilio, nuevo.domicilio);
+	}
+
+	if(strcmp(nuevo.telefono,"-")!=0){
+		free(agenda[pos].telefono);
+		agenda[pos].telefono = malloc(sizeof(char)*(strlen(nuevo.telefono)+1));
+		strcpy(agenda[pos].telefono, nuevo.telefono);
+	}
+
+	agenda[pos].edad = nuevo.edad;
+	
+	return;
 }

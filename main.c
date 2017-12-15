@@ -18,11 +18,12 @@ int main()
 	// Menu principal
 	clear();
 	Contacto * agenda = malloc(sizeof(Contacto));
-	int agendaSize = 0;
-	int op = 0;
+	int agendaSize = 0, op = 0;
+	char * nombre = malloc(sizeof(char)*300);
+	char * apellido = malloc(sizeof(char)*300);
 	while(1){
 		clear();
-		printf("Acciones:\n1 - Cargar agenda de archivo\n2 - Nuevo contacto\n3 - Buscar contacto\n4 - Eliminar contacto\n5 - Editar contacto\n6 - Mostrar contactos\n7- Guardar agenda en archivo\n8 - Salir\n");
+		printf("Acciones:\n1 - Cargar agenda de archivo\n2 - Nuevo contacto\n3 - Buscar contacto\n4 - Eliminar contacto\n5 - Editar contacto\n6 - Mostrar contactos\n7 - Guardar agenda en archivo\n8 - Salir\n");
 		scanf("%d",&op);
 		switch(op){
 			case 1:
@@ -32,22 +33,56 @@ int main()
 			break;
 			case 2:
 				clear();
-				agendaSize = nuevoContacto(&agenda, agendaSize);
+				Contacto * temp;
+				temp = malloc(sizeof(Contacto));
+				printf("Nuevo contacto\n");
+				(*temp) = ingresoDatos();
+				agendaSize = nuevoContacto(&agenda, agendaSize, (*temp));
+				free(temp);
 				pause();
 			break;
 			case 3:
 				clear();
-				buscarContacto(agenda, agendaSize);
+				printf("Buscar contacto\nNombre: ");
+				scanf(" %[^\t\n]s",nombre);
+				printf("Apellido: ");
+				scanf(" %[^\t\n]s",apellido);
+				op = buscarContacto(agenda, agendaSize, nombre, apellido);
+				if(op>=0){
+					mostrarContacto(agenda[op]);
+					pause();
+					break;
+				}
+				printf("%s %s no esta agendado.\n", nombre, apellido);
 				pause();
 			break;
 			case 4:
 				clear();
-				agendaSize = eliminarContacto(&agenda, agendaSize);
+				printf("Eliminar contacto\nNombre: ");
+				scanf(" %[^\t\n]s",nombre);
+				printf("Apellido: ");
+				scanf(" %[^\t\n]s",apellido);
+				agendaSize = eliminarContacto(&agenda, agendaSize, nombre, apellido);
 				pause();
 			break;
 			case 5:
 				clear();
-				editarContacto(agenda, agendaSize);
+				printf("Editar contacto\nNombre: ");
+				scanf(" %[^\t\n]s",nombre);
+				printf("Apellido: ");
+				scanf(" %[^\t\n]s",apellido);
+				op = buscarContacto(agenda, agendaSize, nombre, apellido);
+				if(op>=0){
+					mostrarContacto(agenda[op]);
+					printf("Ingrese '-' en nombre, apellido, domicilio y/o telefono\npara dejarlo sin modificar.\n");
+					temp = malloc(sizeof(Contacto));
+					(*temp) = ingresoDatos();
+					editarContacto(agenda, agendaSize, op, (*temp));
+					free(temp);
+					pause();
+					break;
+				}
+				printf("%s %s no esta agendado.\n", nombre, apellido);
 				pause();
 			break;
 			case 6:
@@ -66,6 +101,7 @@ int main()
 			break;
 		}
 	}
-
+	free(nombre);
+	free(apellido);
 	return 0;
 }
